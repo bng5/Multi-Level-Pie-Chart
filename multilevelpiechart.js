@@ -123,7 +123,10 @@ MultiLevelPieChart.prototype = {
 		sector.value = data.value;
 		return sector;
 	},
-    draw: function(element) {
+    draw: function(element, root) {
+        if(!root) {
+            root = this.root;
+        }
         //this._rootValue();
         try {
 			this._calculateValues(this.root);
@@ -138,13 +141,6 @@ MultiLevelPieChart.prototype = {
         var cont = document.getElementById(element);
         var svg = cont.appendChild(document.createElementNS(this.XMLNS_SVG, 'svg'));
 
-//global.puntosG = svg.appendChild(document.createElementNS(this.XMLNS_SVG, 'g'));
-//global.puntosG.setAttribute("stroke", "black");
-//global.puntosG.setAttribute("stroke-width", "3");
-//global.puntosG.setAttribute("fill", "black");
-
-
-
         this._svg = svg;
         svg.setAttribute('width', '100%');
         svg.setAttribute('height', '100%');
@@ -152,18 +148,20 @@ MultiLevelPieChart.prototype = {
         svg.setAttribute('version', '1.1');
         var g = svg.appendChild(document.createElementNS(this.XMLNS_SVG, 'g'));
         var path = g.appendChild(document.createElementNS(this.XMLNS_SVG, 'path'));
-        this.root.addEventListener('mouseover', path);
+        root.path = path;
+        root.addEventListener('mouseover', path);
+        
         //path.setAttribute('onmouseover', "brillo2(this)");
-        path.setAttribute('onmouseout', "this.setAttribute('fill', '"+this.root.color+"')");
+        path.setAttribute('onmouseout', "this.setAttribute('fill', '"+root.color+"')");
         //path.setAttribute('title', this.root.label);
         path.setAttribute('stroke', '#000000');
         path.setAttribute('stroke-width', '1');
-        path.setAttribute('fill', this.root.color);
-        this.root.A = [50, 0];
-        this.root.radius = 50;
-        path.setAttribute('d', 'M'+this.root.A[0]+','+this.root.A[1]+' '+
-                               'A'+this.root.radius+','+this.root.radius+' 0 1,0 -50,0 A'+this.root.radius+','+this.root.radius+' 0 1,0 50,0 z');
-        this._drawChildren(this.root, 1);
+        path.setAttribute('fill', root.color);
+        root.A = [50, 0];
+        root.radius = 50;
+        path.setAttribute('d', 'M'+root.A[0]+','+root.A[1]+' '+
+                               'A'+root.radius+','+root.radius+' 0 1,0 -50,0 A'+root.radius+','+root.radius+' 0 1,0 50,0 z');
+        this._drawChildren(root, 1);
 
         var tooltip = svg.appendChild(document.createElementNS(this.XMLNS_SVG, 'g'));
         var rect = tooltip.appendChild(document.createElementNS(this.XMLNS_SVG, 'rect'));
@@ -185,6 +183,9 @@ MultiLevelPieChart.prototype = {
     _drawChildren: function(parentSector, level) {
 
         if(parentSector.children.length) {
+            
+            parentSector.addEventListener('click', parentSector.path);
+            
             parentSector._childPos = [(parentSector.A[0] * (1 + (50 / parentSector.radius))), (parentSector.A[1] * (1 + (50 / parentSector.radius)))];
 
             var g2 = this._svg.insertBefore(document.createElementNS(this.XMLNS_SVG, 'g'), this._svg.firstChild);
@@ -196,6 +197,7 @@ MultiLevelPieChart.prototype = {
                 sector = parentSector.children[i];
                 path = g2.appendChild(document.createElementNS(this.XMLNS_SVG, 'path'));
                 var self = sector;
+                self.path = path;
                 sector.addEventListener('mouseover', path);
                 //path.setAttribute('onmouseover', "brillo2(this)");
                 path.setAttribute('onmouseout', "this.setAttribute('fill', '"+sector.color+"')");
@@ -259,9 +261,19 @@ MultiLevelPieChartSector.prototype = {
     },
     addEventListener: function(type, element) {
         var self = this;
-        element.addEventListener(type, function(event) {
-            brillo2(element, self, (event.clientX - 200), (event.clientY - 200) );
-        }, false);
+        switch(type) {
+            case 'click':
+                element.addEventListener(type, function(event) {
+                    document.getElementById('contenedor').innerHTML = '';
+                    global.chart.draw('contenedor', self);
+                }, false);
+                break;
+            default:
+                element.addEventListener(type, function(event) {
+                    brillo2(element, self, (event.clientX - 200), (event.clientY - 200) );
+                }, false);
+                break;
+        }
     }
 };
 
