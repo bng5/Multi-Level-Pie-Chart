@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" xml:lang="es" lang="es">
+<head>
+ <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+ <title>MultiLevelPieChart Example</title>
+ <style type="text/css">
+
+#contenedor {
+    width: 400px;
+}
+ </style>
+
+ <script type="text/javascript" src="../multilevelpiechart.js"></script>
+ <script type="text/javascript">
+/* <![CDATA[ */
+
+function drawchart() {
+    var chart = new MultiLevelPieChart();
+    chart.root.label = 'Raíz';
+    //chart.root.value = 200;
+    chart.tooltip.textFormat = '{label} {value}\n'+
+    	'{percent}%';
+
+    var xml = chart.root.addSector(chart.createSector({label: 'XML', value: 60}));//, color: '#ff0000'
+    var php = chart.root.addSector(chart.createSector({label: 'PHP', value: 30}));//, color: '#0000ff'
+    var css = chart.root.addSector({label: 'CSS', value: 50});//, color: '#00ff00'
+
+    var svg = xml.addSector(chart.createSector({label: 'SVG', value: 25}));//, color: '#FF9999'
+    var docbook = xml.addSector(chart.createSector({label: 'DocBook', value: 25}));//, color: '#FF5555'
+
+    var docbook5 = docbook.addSector({label: 'DocBook5', value: 15});//, color: '#FFAAAA'
+    var docbook4 = docbook.addSector({label: 'DocBook4', value: 5});//, color: '#FFAAAA'
+
+    chart.draw('contenedor');
+    //console.log(chart);
+    global.chart = chart;
+}
+
+/* ]]> */
+ </script>
+</head>
+<body onload="drawchart()">
+
+    <div id="contenedor"></div>
+    <div id="contenedor1"></div>
+</body>
+</html>

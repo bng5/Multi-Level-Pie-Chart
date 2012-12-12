@@ -5,14 +5,17 @@ MultiLevelPieChart
 Properties
 ----------
 
-<dl>
-    <dt>root</dt>
-    <dd>MultiLevelPieChartSector root</dd>
+root
+: MultiLevelPieChartSector root
+since 1.0
 
-    <dt>total</dt>
-    <dd>int total</dd>
+total
+: int total
+since 1.0
 
-</dl>
+tooltip
+: object { textFormat: '', color: '', highlightColor: ''}
+since 1.0
 
 
 Methods
@@ -31,6 +34,7 @@ MultiLevelPieChartSector
 Properties
 ----------
 
+label
 
 
 Methods
@@ -44,7 +48,7 @@ MultiLevelPieChartSector **addSector**(object _params_)
 Examples
 ========
 
-```javascript; charset=UTF-8
+```javascript
     var chart = new MultiLevelPieChart();
         chart.root.label = 'Raíz';
 
