@@ -21,15 +21,15 @@ function drawchart() {
     chart.tooltip.textFormat = '{label} {value}\n'+
     	'{percent}%';
 
-    var xml = chart.root.addSector(chart.createSector({label: 'XML', value: 60}));//, color: '#ff0000'
-    var php = chart.root.addSector(chart.createSector({label: 'PHP', value: 30}));//, color: '#0000ff'
-    var css = chart.root.addSector({label: 'CSS', value: 50});//, color: '#00ff00'
+    var xml = chart.root.appendChild(chart.createSector({label: 'XML', value: 60}));//, color: '#ff0000'
+    var php = chart.root.appendChild(chart.createSector({label: 'PHP', value: 30}));//, color: '#0000ff'
+    var css = chart.root.appendChild(chart.createSector({label: 'CSS', value: 50}));//, color: '#00ff00'
 
-    var svg = xml.addSector(chart.createSector({label: 'SVG', value: 25}));//, color: '#FF9999'
-    var docbook = xml.addSector(chart.createSector({label: 'DocBook', value: 25}));//, color: '#FF5555'
+    var svg = xml.appendChild(chart.createSector({label: 'SVG', value: 25}));//, color: '#FF9999'
+    var docbook = xml.appendChild(chart.createSector({label: 'DocBook', value: 25}));//, color: '#FF5555'
 
-    var docbook5 = docbook.addSector({label: 'DocBook5', value: 15});//, color: '#FFAAAA'
-    var docbook4 = docbook.addSector({label: 'DocBook4', value: 5});//, color: '#FFAAAA'
+    var docbook5 = docbook.appendChild(chart.createSector({label: 'DocBook5', value: 15}));//, color: '#FFAAAA'
+    var docbook4 = docbook.appendChild(chart.createSector({label: 'DocBook4', value: 5}));//, color: '#FFAAAA'
 
     chart.draw('contenedor');
     //console.log(chart);

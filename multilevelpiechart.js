@@ -243,7 +243,7 @@ function MultiLevelPieChartSector(value, label, color, highlight) {
 }
 
 MultiLevelPieChartSector.prototype = {
-    addSector: function(data) {
+    appendChild: function(data) {
 
         var value = data.value ? data.value : null;
         var label = data.label ? data.label : null;
@@ -260,7 +260,6 @@ MultiLevelPieChartSector.prototype = {
     addEventListener: function(type, element) {
         var self = this;
         element.addEventListener(type, function(event) {
-console.log(event, event.clientX, event.clientY);
             brillo2(element, self, (event.clientX - 200), (event.clientY - 200) );
         }, false);
     }
