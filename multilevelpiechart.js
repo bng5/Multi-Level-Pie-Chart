@@ -176,6 +176,33 @@ MultiLevelPieChart.prototype = {
         text.setAttribute('style', 'font-size:12px;font-style:normal;font-weight:normal;line-height:100%;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans, sans-serif;');
         text.appendChild(document.createTextNode('ToolTip'));
         global.tooltip = tooltip;
+        
+        if(root.parent) {
+            var traceArr = new Array();
+            var currParent = root;
+            while(currParent) {
+                traceArr.unshift(currParent);
+                currParent = currParent.parent;
+            }
+            var trace = svg.appendChild(document.createElementNS(this.XMLNS_SVG, 'g'));
+            var x = -190;
+            var bbox;
+            for(var i = 0; i < traceArr.length; i++) {
+                text = trace.appendChild(document.createElementNS(this.XMLNS_SVG, 'text'));
+                text.setAttribute('x', x);
+                text.setAttribute('y', '-190');
+                text.setAttribute('style', 'font-size:12px;font-style:normal;font-weight:normal;line-height:100%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans, sans-serif;');
+                text.appendChild(document.createTextNode(traceArr[i].label));
+                text.addEventListener('click', function(event) {
+                    document.getElementById('contenedor').innerHTML = '';
+                    global.chart.draw('contenedor', traceArr[i]);
+                }, false);
+                bbox = text.getBBox();
+                x += (bbox.width + 10);
+            }
+        }
+        
+        global.trace = trace;
     },
     _printError: function(message) {
 		console.error(message);
