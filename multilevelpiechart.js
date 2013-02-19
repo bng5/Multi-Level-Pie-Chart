@@ -63,6 +63,7 @@ function MultiLevelPieChart() {
     this.root.label = 'Root';
     this.root.color = '#cccccc';
     this.tooltip = {color: '#000000', textFormat: 'label: {label} \n {percent}% \n'}
+    this.children = [];
 }
 
 MultiLevelPieChart.prototype = {
@@ -118,9 +119,10 @@ MultiLevelPieChart.prototype = {
         }
     },
     createSector: function(data) {
-		var sector = new MultiLevelPieChartSector();
-		sector.label = data.label;
-		sector.value = data.value;
+		var sector = new MultiLevelPieChartSector(data.value, data.label, data.color, data.highlight);
+//		sector.label = data.label;
+//		sector.value = data.value;
+//		sector.value = data.value;
 		return sector;
 	},
     draw: function(element, root) {
@@ -141,6 +143,14 @@ MultiLevelPieChart.prototype = {
         var cont = document.getElementById(element);
         var svg = cont.appendChild(document.createElementNS(this.XMLNS_SVG, 'svg'));
 
+
+
+
+
+
+
+
+
         this._svg = svg;
         svg.setAttribute('width', '100%');
         svg.setAttribute('height', '100%');
@@ -149,7 +159,7 @@ MultiLevelPieChart.prototype = {
         var g = svg.appendChild(document.createElementNS(this.XMLNS_SVG, 'g'));
         var path = g.appendChild(document.createElementNS(this.XMLNS_SVG, 'path'));
         root.path = path;
-        root.addEventListener('mouseover', path);
+
         
         //path.setAttribute('onmouseover', "brillo2(this)");
         path.setAttribute('onmouseout', "this.setAttribute('fill', '"+root.color+"')");
@@ -161,8 +171,26 @@ MultiLevelPieChart.prototype = {
         root.radius = 50;
         path.setAttribute('d', 'M'+root.A[0]+','+root.A[1]+' '+
                                'A'+root.radius+','+root.radius+' 0 1,0 -50,0 A'+root.radius+','+root.radius+' 0 1,0 50,0 z');
+
+global.puntosG = svg.appendChild(document.createElementNS(this.XMLNS_SVG, 'g'));
+global.puntosG.setAttribute("stroke", "black");
+global.puntosG.setAttribute("stroke-width", "3");
+global.puntosG.setAttribute("fill", "black");
+
+var sector = root;
+sector.tooltip = {};
+sector.tooltip.pos = {};
+sector.tooltip.pos.x = (sector.A[0] * Math.cos(Math.PI)) + (sector.A[1] * Math.sin(Math.PI));
+sector.tooltip.pos.y = ((0 - sector.A[0]) * Math.sin(Math.PI)) + (sector.A[1] * Math.cos(Math.PI));
+sector.tooltip.el = this.Punto(sector.tooltip.pos.x, sector.tooltip.pos.y, sector);
+        root.addEventListener('mouseover', path);
+        root.addEventListener('mouseout', path);
+
         this._drawChildren(root, 1);
 
+        /** 
+         * ToolTip 
+         *
         var tooltip = svg.appendChild(document.createElementNS(this.XMLNS_SVG, 'g'));
         var rect = tooltip.appendChild(document.createElementNS(this.XMLNS_SVG, 'rect'));
         rect.setAttribute('x', '-300');
@@ -176,7 +204,11 @@ MultiLevelPieChart.prototype = {
         text.setAttribute('style', 'font-size:12px;font-style:normal;font-weight:normal;line-height:100%;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans, sans-serif;');
         text.appendChild(document.createTextNode('ToolTip'));
         global.tooltip = tooltip;
-        
+         *
+         * ToolTip
+         */
+
+
         if(root.parent) {
             var traceArr = new Array();
             var currParent = root;
@@ -212,32 +244,64 @@ MultiLevelPieChart.prototype = {
         if(parentSector.children.length) {
             
             parentSector.addEventListener('click', parentSector.path);
+            parentSector.path.setAttribute('style', 'cursor:pointer;');
             
             parentSector._childPos = [(parentSector.A[0] * (1 + (50 / parentSector.radius))), (parentSector.A[1] * (1 + (50 / parentSector.radius)))];
 
             var g2 = this._svg.insertBefore(document.createElementNS(this.XMLNS_SVG, 'g'), this._svg.firstChild);
             var sector;
             var angle, bigger;
+            var angleM;
             var B;
-            var d = (100 / parentSector.value);
+            var self;
             for(var i = 0; i < parentSector.children.length; i++) {
                 sector = parentSector.children[i];
                 path = g2.appendChild(document.createElementNS(this.XMLNS_SVG, 'path'));
-                var self = sector;
+                self = sector;
                 self.path = path;
                 sector.addEventListener('mouseover', path);
-                //path.setAttribute('onmouseover', "brillo2(this)");
+                sector.addEventListener('mouseout', path);
+
                 path.setAttribute('onmouseout', "this.setAttribute('fill', '"+sector.color+"')");
                 path.setAttribute('stroke', '#000000');
                 path.setAttribute('stroke-width', '1');
                 path.setAttribute('fill', sector.color);
-                path.setAttribute('style', 'cursor:pointer;');
+                //path.setAttribute('style', 'cursor:pointer;');
                 sector.radius = ((level + 1) * 50);
                 sector.percent = Math.round(sector.percent);
                 //angle = -(sector.percent * ((2 * Math.PI) / (100 * (100 / this.root.value))));//parentSector.value))));
                 angle = -(sector.percent * (2 * Math.PI) / 100);//parentSector.value))));
+                
                 bigger = (angle < 0 - Math.PI) ? 1 : 0;
                 sector.A = parentSector._childPos;
+                
+                sector.tooltip = {};
+                sector.tooltip.pos = {};
+
+//angleM = -(sector.percent * Math.PI / 100);
+//console.group('Ángulo');
+//console.log(angle);
+//console.groupEnd();
+angleM = (angle / 2);
+
+var M = [];
+M.push((sector.A[0] * Math.cos(angleM)) + (sector.A[1] * Math.sin(angleM)));
+M.push(((0 - sector.A[0]) * Math.sin(angleM)) + (sector.A[1] * Math.cos(angleM)));
+
+//angleM = Math.pow(Math.tan(M[0] / M[1]), -1);
+
+//M[0] = (Math.cos(angleM) * (sector.radius + 10));
+//M[1] = (Math.sin(angleM) * (sector.radius + 10));
+                
+sector.tooltip.pos.x = (sector.A[0] * Math.cos(angleM)) + (sector.A[1] * Math.sin(angleM));
+sector.tooltip.pos.y = ((0 - sector.A[0]) * Math.sin(angleM)) + (sector.A[1] * Math.cos(angleM));
+//sector.tooltip.pos.x = M[0];
+//sector.tooltip.pos.y = M[1];
+sector.tooltip.el = this.Punto(sector.tooltip.pos.x, sector.tooltip.pos.y, sector);
+
+//this.Punto2((Math.cos(alpha) * (sector.radius + 20)), (Math.sin(alpha) * (sector.radius + 20)));
+
+
                 B = [];
                 B.push((sector.A[0] * Math.cos(angle)) + (sector.A[1] * Math.sin(angle)));
                 B.push(((0 - sector.A[0]) * Math.sin(angle)) + (sector.A[1] * Math.cos(angle)));
@@ -254,8 +318,87 @@ MultiLevelPieChart.prototype = {
             }
         }
     },
+    Punto: function(x, y, sector) {
+        var tooltip = global.puntosG.appendChild(document.createElementNS(this.XMLNS_SVG, 'g'));
+        tooltip.setAttribute('style', 'visibility:hidden;');
+        var rect = tooltip.appendChild(document.createElementNS(this.XMLNS_SVG, 'rect'));
+
+        rect.setAttribute('rx', '5');
+        rect.setAttribute('ry', '5');
+        rect.setAttribute('style', 'fill:#000000;fill-opacity:0.9;fill-rule:nonzero;stroke:none;');
+        var text = tooltip.appendChild(document.createElementNS(this.XMLNS_SVG, 'text'));
+//                text.setAttribute('x', sector.tooltip.pos.x);
+//                text.setAttribute('y', sector.tooltip.pos.y);
+        text.setAttribute('style', 'font-size:12px;font-style:normal;font-weight:normal;line-height:100%;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Bitstream Vera Sans, sans-serif;');
+
+
+//    if(sector.tooltip) {
+
+//        x = (sector.tooltip.pos.x > 0 ? sector.tooltip.pos.x : (sector.tooltip.pos.x - bbox.width));
+//        y = (sector.tooltip.pos.y > 0 ? sector.tooltip.pos.y : (sector.tooltip.pos.y - bbox.width));
+//}
+
+        var str = this.tooltip.textFormat;
+        str = str.replace('{label}', sector.label);
+        str = str.replace('{percent}', sector.percent);
+        str = str.replace('{value}', sector.value);
+
+    //    while(text.firstChild != null) {
+    //        text.removeChild(text.firstChild);
+    //    }
+        //global.tooltip.firstChild.firstChild.replaceData(0, global.tooltip.firstChild.firstChild.length, str);
+
+        var lines = str.split('\n');
+
+
+        rect.setAttribute('x', 0);//-5);
+        rect.setAttribute('y', 0);//-17);
+x = 5;
+y = 17;
+
+
+
+        var tspan;
+        //var y = -300;
+        for(var l = 0; l < lines.length; l++) {
+            tspan = text.appendChild(document.createElementNS(this.XMLNS_SVG, 'tspan'));
+            tspan.appendChild(document.createTextNode(lines[l]));
+            tspan.setAttribute('x', x);
+            tspan.setAttribute('y', y);
+            y += 20;
+        }
+        var bbox = text.getBBox();
+        rect.setAttribute('width', (bbox.width + 10));
+        rect.setAttribute('height', (bbox.height + 10));
+        
+        rectX = sector.tooltip.pos.x;
+        rectY = sector.tooltip.pos.y;
+        if(rectX < 0) {
+            rectX = (rectX - bbox.width - 10);
+        }
+        
+        if(rectY < 0) {
+            rectY = (rectY - bbox.height - 10);
+        }
+
+//        rect.setAttribute('x', x);
+//        rect.setAttribute('y', y);
+        
+//x = (sector.tooltip.pos.x > 0 ? sector.tooltip.pos.x : (sector.tooltip.pos.x - bbox.width));
+//y = (sector.tooltip.pos.y > 0 ? sector.tooltip.pos.y : (sector.tooltip.pos.y - bbox.width));
+        
+tooltip.setAttribute('transform', 'translate('+rectX+', '+rectY+')');
+return tooltip;
+
+
+    },
     highlight: function() {
         
+    },
+    appendChild: function(sector) {
+        sector.parent = this;
+        this.children.push(sector);
+        return sector;
     }
 };
 
@@ -272,15 +415,15 @@ function MultiLevelPieChartSector(value, label, color, highlight) {
 }
 
 MultiLevelPieChartSector.prototype = {
-    appendChild: function(data) {
+    appendChild: function(sector) {
 
-        var value = data.value ? data.value : null;
-        var label = data.label ? data.label : null;
-        var color = data.color ? data.color : null;
-        var highlight = data.highlight ? data.highlight : null;
+//        var value = data.value ? data.value : null;
+//        var label = data.label ? data.label : null;
+//        var color = data.color ? data.color : null;
+//        var highlight = data.highlight ? data.highlight : null;
 
         //{label: 'XML', color: '#ff0000', value: 50}
-        var sector = new MultiLevelPieChartSector(value, label, color, highlight);
+        //var sector = new MultiLevelPieChartSector(value, label, color, highlight);
         sector.parent = this;
         //sector.level = this.level+1;
         this.children.push(sector);
@@ -295,9 +438,16 @@ MultiLevelPieChartSector.prototype = {
                     global.chart.draw('contenedor', self);
                 }, false);
                 break;
+            case 'mouseout':
+                element.addEventListener(type, function(event) {
+                    self.tooltip.el.setAttribute('style', 'visibility: hidden;');
+                }, false);
+                break;
             default:
                 element.addEventListener(type, function(event) {
-                    brillo2(element, self, (event.clientX - 200), (event.clientY - 200) );
+                    var pos = obtenerPosAbsoluta(event.target);
+                    brillo2(element, self, (event.layerX - pos.x - 200), (event.layerY - pos.y - 200));
+//                    brillo2(element, self, (event.clientX - 200), (event.clientY - 200) );
                 }, false);
                 break;
         }
@@ -306,47 +456,23 @@ MultiLevelPieChartSector.prototype = {
 
 
 function brillo2(el, sector, x, y) {
+
+if(sector.tooltip) {
+    y = sector.tooltip.pos.y;
+    x = sector.tooltip.pos.x;
+    sector.tooltip.el.setAttribute('style', 'visibility: visible;');
+}
+else {
+    x += 20;
+    y += 20;
+}
+//    x += (x >= 0) ? 15 : -15;
+//    y += (y >= 0) ? 15 : -15;
+    
     //var el = document.getElementById(el);
     //window.getComputedStyle(el, null).getPropertyValue('background-image')
     var fill = el.getAttribute('fill');
-    var re;
-
-var str = global.chart.tooltip.textFormat;
-str = str.replace('{label}', sector.label);
-str = str.replace('{percent}', sector.percent);
-str = str.replace('{value}', sector.value);
-var rect = global.tooltip.childNodes[0];
-var text = global.tooltip.childNodes[1];
-while(text.firstChild != null) {
-    text.removeChild(text.firstChild);
-}
-//global.tooltip.firstChild.firstChild.replaceData(0, global.tooltip.firstChild.firstChild.length, str);
-var lines = str.split('\n');
-text.setAttribute('x', x);
-text.setAttribute('y', y);
-rect.setAttribute('x', (x - 5));
-rect.setAttribute('y', (y - 17));
-if(lines.length == 1) {
-    text.appendChild(document.createTextNode(lines[0]));
-}
-else if(lines.length > 1) {
-    var tspan;
-    //var y = -300;
-    for(var i = 0; i < lines.length; i++) {
-        tspan = text.appendChild(document.createElementNS(global.chart.XMLNS_SVG, 'tspan'));
-        tspan.appendChild(document.createTextNode(lines[i]));
-        tspan.setAttribute('x', x);
-        tspan.setAttribute('y', y);
-        y += 20;
-    }
-	var bbox = text.getBBox();
-
-	rect.setAttribute('width', (bbox.width + 10));
-	rect.setAttribute('height', (bbox.height + 10));
-}
-
-    re = /^#([A-Fa-f0-9]{2})([A-Fa-f0-9]{2})([A-Fa-f0-9]{2})$/;
-
+    var re = /^#([A-Fa-f0-9]{2})([A-Fa-f0-9]{2})([A-Fa-f0-9]{2})$/;
 
     if(rgb = re.exec(fill)) {
 
@@ -536,3 +662,30 @@ function hsvToRgb(h, s, v){
 
 
 /******************************************************************************/
+
+
+function obtenerPosAbsoluta(el) {
+    var SL = 0, ST = 0;
+    if(/^path$/i.test(el.tagName)) {
+        el = el.farthestViewportElement.parentElement;
+    }
+    
+    var is_div = /^div$/i.test(el.tagName);
+    
+    
+    
+    if (is_div && el.scrollLeft) {
+        SL = el.scrollLeft;
+    }
+    if (is_div && el.scrollTop) {
+        ST = el.scrollTop;
+    }
+    var r = { x: el.offsetLeft - SL, y: el.offsetTop - ST };
+    if (el.offsetParent) {
+        var tmp = obtenerPosAbsoluta(el.offsetParent);
+        r.x += tmp.x;
+        r.y += tmp.y;
+    }
+    return r;
+}
+
